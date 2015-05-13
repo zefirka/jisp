@@ -30,6 +30,10 @@
 	:E 2.7192
 	:inc (lambda(x)(+ x 1)) ))
 
+
+(def taked-inc (get Math :inc))
+(def used (taked-inc 10));
+
 (def a (set 1 2 3))
 (def b (set 4 5 6))
 

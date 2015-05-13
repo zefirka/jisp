@@ -344,7 +344,7 @@ Jisp.names.dissoc = function(){
 }
 
 Jisp.names.get = function(a, b){
-  return a[b];
+  return a[b.id ? b.id.slice(1) : b];
 }
 
 Jisp.names["."] = Jisp.defun(function(hash, name){

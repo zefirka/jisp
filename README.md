@@ -51,3 +51,22 @@ Or use `defun` macros:
           firstb (car y))
     (>= firsta firstb) firsta firstb))
 ```
+
+###Data types
+
+####Lists
+  - `(list 1 2 3)` - creates list  `(1 2 3)`
+  - `(car (1 2 3)` - takes head of list `1`
+  - `(cdr (1 2 3)` - takes rest of list `(2 3)`
+  - `(cons 1 (2 3)` - concats args to list `(1 2 3)`
+  - `(length (1 2 3)` - return count of elements of list `3`
+
+###Methods
+  - `(map fn list)` - applies given function to the each list element return new list
+
+```lisp
+(defun square(x) (* x x))
+
+(map square (1 2 3 4))
+>(1 4 9 16)
+```
