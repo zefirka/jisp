@@ -207,6 +207,44 @@ Jisp.names.str = function(){
   }).join("");
 }
 
+Jisp.names.let = Jisp.defun(function(bindings, body){
+  function parseBody(token, arr){    
+    if(token.id){
+      arr.forEach(function(alias){
+        if(alias.id == token.id){
+          token = alias.value;
+        }
+      });
+
+    }
+
+    if(Array.isArray(token)){
+      return token.map(function(x){
+        return parseBody(x, arr);
+      })
+    }
+
+    return token;
+  }
+
+  if(bindings.length%2){
+    throw "Even length of bindings list";
+  }
+
+  var aliases = []
+
+  for(var i=0,l=bindings.length;i<l;i+=2){
+    aliases.push({
+      id: bindings[i].id,
+      value : bindings[i+1]
+    });
+  }
+
+  return Jisp(body.map(function(token){
+    return parseBody(token, aliases);
+  }));
+}, 2, true);
+
 Jisp.names.log = function(e){
   console.log(e);
 }
@@ -312,6 +350,7 @@ Jisp.names['mod'] = Jisp.defun(function(a,b){	return a % b; }, 2);
 Jisp.names['and'] = Jisp.defun(function(a,b){return a && b;}, 2);
 Jisp.names['or'] = Jisp.defun(function(a,b){ return a || b;}, 2);
 Jisp.names['not'] = Jisp.defun(function(a){ return !a;}, 1);
+Jisp.names['list?'] = Jisp.defun(function(a){ return Array.isArray(a);}, 1);
 
 /* Debugging logger */
 function deb(){ return Jisp.debug && console.log.apply(console, arguments); }

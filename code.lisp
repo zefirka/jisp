@@ -27,3 +27,8 @@
 	(if (= b 0)	1 
 		(if (= a 0) 0
 			(* a (pow a (- b 1))))))
+
+(defun max(a b)
+	(let ( 	fa (if (list? a) (car a) a)
+			fb (if (list? b) (car b) b))
+		(if (>= fa fb) fa fb)))
