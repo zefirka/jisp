@@ -1,6 +1,6 @@
-var _ = require("./utils.js");
+var _ = require("../etc/Utils.js");
 
-var Set = (function(){
+module.exports = (function(){
 	function push(set, item){
 		if(set.items.length){
 			if(set.items.every(function(sitem){
@@ -50,5 +50,3 @@ var Set = (function(){
 
 	return Set;
 })();
-
-module.exports = Set;

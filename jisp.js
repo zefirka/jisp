@@ -1,7 +1,7 @@
-var _       = require("./utils.js"),
-    Errors  = require("./Errors.js"),
-    Set     = require("./Set.js");
-
+var _       = require("./etc/Utils.js"),
+    Errors  = require("./etc/Errors.js"),
+    Set     = require("./types/Set.js");
+    Hash     = require("./types/Hash.js")
 
 /* Main interpreter function takes array and previous form*/
 var Jisp = function(form, prev){
@@ -22,9 +22,11 @@ var Jisp = function(form, prev){
           /* Defined variables dereferences */
           if(Jisp.vars[id] !== undefined){
             var _var = Jisp.vars[id].value;
+            
 
             if(!_var){
-            _var = Jisp.vars[Jisp.vars[id].id].value;
+              var jid = Jisp.vars[id];
+              _var = Jisp.vars[jid].id ? Jisp.vars[jid].value : Jisp.vars[Jisp.vars[jid].id].value;
             }
 
             if(typeof _var == 'function' && position == 0){
@@ -93,13 +95,18 @@ Jisp.defun = function(fn, arity, quote){
 	return res;
 }
 
+Jisp.names['defined?'] = function(e){
+  return  Jisp.names[e.id || e] || Jisp.vars[e.id || e];
+}
+
 /*********************************************************/
 /* DEFINITIONS */
 /*********************************************************/
 
 /* Define */
 Jisp.names.def = Jisp.defun(function(name, value){
-	var id = name.id || name;
+	console.log(arguments);
+  var id = name.id || name;
 	
 	/* Error checking */
 	if(Jisp.names[id]){
@@ -112,17 +119,19 @@ Jisp.names.def = Jisp.defun(function(name, value){
 		throw Errors.undexpectedIdentificator(name);
 	}
 	
+  //console.log(arguments);
 
 	if(value.id){
-		Jisp.vars[name.id] = value;
-		return value.value;
+    Jisp.vars[name.id] = (value.id ? value.id : value);
+
 	}else{
 		Jisp.vars[id] = {
 			id: id,
 			value: value
 		}
-		return value;
 	}
+
+  return value;
 
 }, 2);
 
@@ -252,89 +261,25 @@ Jisp.names.log = function(e){
   console.log(e);
 }
 
-Jisp.names.join = function(a, c){
-  return a.join(c);
-}
-
-Jisp.names["."] = function(x, y){
-  console.log(arguments);
-  return x[y.id || y];
-}
-
-/* Set data type */
-Jisp.names.set = function(){
-	var argv = _.toArray(arguments),
-		set = new Set(argv);
-
-	return set;
-}
-
-Jisp.names.add = function(){
-	var argv = _.toArray(arguments);
-
-	var set  = new Set(argv[0].items);
-
-	argv.slice(1).forEach(function(item){
-		set.add(item);
-	});
-
-	return set;
-}
-
-Jisp.names.remove = function(){
-	var argv = _.toArray(arguments);
-
-	var set = new Set(argv[0].items);
-
-	argv.slice(1).forEach(function(item){
-		set.remove(item);
-	})
-	return set;
-}
-
 Jisp.names['throw'] = function(message){
   throw message;
 }
 
-Jisp.names.union = function(a, b){
-	var set = new Set(a.items);
-	return set.union(b);
-}
+/********************************************************************/
+/* LIST DATA TYPE */
+/********************************************************************/
 
-/* Hashes */
-Jisp.names.hash = function(){
-	var argv = _.toArray(arguments);
-
-	if(!argv.length%2){
-		throw "Arity error";
-	}
-	var j = {};
-
-	for(var i=0,l=argv.length;i<l;i+=2){
-		var prop = argv[i];
-		prop = prop.id || prop;
-		
-		if(prop[0] == ":"){
-			prop = prop.slice(1);
-		}
-
-		j[prop.id || prop] = argv[i+1];
-	}
-
-	return j;
-};
-
+Jisp.names.car = Jisp.defun(function(a){ return a[0]; }, 1);
+Jisp.names.cdr = Jisp.defun(function(a){ return a.slice(1); }, 1);
+Jisp.names.cons = Jisp.defun(function(a, b){ return [a].concat(b); }, 2);
+Jisp.names.join = Jisp.defun(function(a, c){ return a.join(c); }, 2);
+Jisp.names.list = function(){ return _.toArray(arguments); }
 Jisp.names['length'] = function(e){
   return e.length;
 }
 
-Jisp.names.assoc = function(hash, prop, value){
-	hash[prop.id || prop] = value.id || value;
-	return hash;
-}
-
 Jisp.names.map = Jisp.defun(function(fn, arr){
-	return arr.map(function(item){
+  return arr.map(function(item){
     return Jisp([fn, item]);
   });
 }, 2, true);
@@ -351,12 +296,61 @@ Jisp.names.filter = Jisp.defun(function(fn, arr){
   });
 }, 2, true);
 
-/* List functions  */
-Jisp.names.car = Jisp.defun(function(a){ return a[0]; }, 1);
-Jisp.names.cdr = Jisp.defun(function(a){ return a.slice(1); }, 1);
-Jisp.names.cons = Jisp.defun(function(a, b){ return [a].concat(b); }, 2);
-Jisp.names.list = function(){ return _.toArray(arguments); }
 
+/********************************************************************/
+/* SET DATA TYPE */
+/********************************************************************/
+
+Jisp.names.set = function(){
+	return new Set(_.toArray(arguments));
+}
+
+Jisp.names.add = function(){
+  var argv = _.toArray(arguments),
+      set  = new Set(argv[0].items);
+
+  argv.slice(1).forEach(function(item){ set.add(item);  });
+
+  return set;
+}
+
+Jisp.names.remove = function(){
+  var argv = _.toArray(arguments),
+      set = new Set(argv[0].items);
+
+  argv.slice(1).forEach(function(item){ set.remove(item); })
+  return set;
+}
+
+Jisp.names.union = function(a, b){
+	return (new Set(a.items)).union(b);
+}
+
+/********************************************************************/
+/* HASH DATA TYPE */
+/********************************************************************/
+Jisp.names.hash = function(){
+	return new Hash(_.toArray(arguments)).items;
+}
+
+Jisp.names.assoc = function(){
+  var argv = _.toArray(arguments);
+  return (new Hash(argv[0])).assoc(argv.slice(1));
+}
+
+Jisp.names.dissoc = function(){
+  var argv = _.toArray(arguments);
+  return (new Hash(argv[0])).dissoc(argv.slice(1));
+}
+
+Jisp.names.get = function(a, b){
+  return a[b];
+}
+
+Jisp.names["."] = Jisp.defun(function(hash, name){
+  hash = hash.id ? Jisp.vars[hash.id].value : Jisp(hash);
+  return name.id ? hash[name.id] || hash[name] : hash[name];
+}, 2, true);
 
 /* Math operations */
 Jisp.names['+'] = function(e){ return _.toArray(arguments).reduce(_.fnop('+')); }
