@@ -42,13 +42,16 @@ var Jisp = function(form, prev){
 
             if(typeof keyword == 'function' && position == 0){
               var argv = form.slice(1);
-
+            
               if(!keyword.quote){
                 argv = Jisp(argv, token);
               }
-
+            
               form = keyword.apply(form, argv);
               break;
+            }else
+            if(typeof keyword == 'function' && position !== 0){
+              form[position] = token;
             }else{
               form[position] = Jisp.names[id].value;
             }
@@ -254,6 +257,7 @@ Jisp.names.join = function(a, c){
 }
 
 Jisp.names["."] = function(x, y){
+  console.log(arguments);
   return x[y.id || y];
 }
 
@@ -288,6 +292,10 @@ Jisp.names.remove = function(){
 	return set;
 }
 
+Jisp.names['throw'] = function(message){
+  throw message;
+}
+
 Jisp.names.union = function(a, b){
 	var set = new Set(a.items);
 	return set.union(b);
@@ -316,16 +324,32 @@ Jisp.names.hash = function(){
 	return j;
 };
 
+Jisp.names['length'] = function(e){
+  return e.length;
+}
+
 Jisp.names.assoc = function(hash, prop, value){
 	hash[prop.id || prop] = value.id || value;
 	return hash;
 }
 
-Jisp.names.map = function(fn, arr){
-	var fn = Jisp.vars[fn.id || fn] ? Jisp.vars[fn.id || fn].value : Jisp.names[fn.id || fn];
-	console.log(fn);
-	return arr.map(fn);
-}
+Jisp.names.map = Jisp.defun(function(fn, arr){
+	return arr.map(function(item){
+    return Jisp([fn, item]);
+  });
+}, 2, true);
+
+Jisp.names.reduce = Jisp.defun(function(fn, arr){
+  return arr.reduce(function(a, b){
+    return Jisp([fn, a ,b]);
+  });
+}, 2, true);
+
+Jisp.names.filter = Jisp.defun(function(fn, arr){
+  return arr.filter(function(item){
+    return Jisp([fn, item]);
+  });
+}, 2, true);
 
 /* List functions  */
 Jisp.names.car = Jisp.defun(function(a){ return a[0]; }, 1);
@@ -428,6 +452,16 @@ Jisp.Eval = function(str){
 }
 
 
+if(process.argv.length > 2){
+  var filename = process.argv.pop();
+  require('fs').readFile(filename, {encoding: 'utf-8'}, function(err, data){
+    if(err){
+      throw err;
+    }
+    Jisp.Eval(data);
+  })
+}
+
 if(process.argv.indexOf("-d")>=0){
 	Jisp.debug = true;
 }
@@ -444,14 +478,4 @@ if(process.argv.indexOf("-r")>=0){
 		console.log(Jisp.Eval(line));
 	});
 
-}else{
-	if(process.argv.length > 2){
-		var filename = process.argv.pop();
-		require('fs').readFile(filename, {encoding: 'utf-8'}, function(err, data){
-			if(err){
-				throw err;
-			}
-			Jisp.Eval(data);
-		})
-	}
 }
