@@ -1,80 +1,78 @@
-var _ 			= require("./utils.js"),
-	Errors 		= require("./Errors.js"),
-	Set 		= require("./Set.js");
+var _       = require("./utils.js"),
+    Errors  = require("./Errors.js"),
+    Set     = require("./Set.js");
 
-/* Main interpreter function takes array*/
+
+/* Main interpreter function takes array and previous form*/
 var Jisp = function(form, prev){
-	/* If called with form */
-	if(Array.isArray(form)){
-		
-		for(var position=0, length=form.length; position<length; position++){
-			var token = form[position];
-		
-			/* if identificator */
-			if(token.id !== undefined){
-				var id = token.id;
+  /* If called with form */
+  if(Array.isArray(form)){
 
-				if(prev && prev.id == 'def'){
-					
+    for(var position=0, length=form.length; position<length; position++){
+      var token = form[position];
+
+      /* if identificator */
+      if(token.id !== undefined){
+        var id = token.id;
+        
+        if(prev && prev.id == 'def'){
+          /* Here we can check Reference Errors and Scope folding*/
+        }else{
+
+          /* Defined variables dereferences */
+          if(Jisp.vars[id] !== undefined){
+            var _var = Jisp.vars[id].value;
+
+            if(!_var){
+            _var = Jisp.vars[Jisp.vars[id].id].value;
+            }
+
+            if(typeof _var == 'function' && position == 0){
+              form = _var.apply(form, Jisp(form.slice(1)));
+              break;
+            }else{
+              form[position] = Jisp.vars[id].value;
+            }
+          }
 
 
-				}else{
+          /* Reserved names dereferences */
+          if(Jisp.names[id] !== undefined){
+            var keyword = Jisp.names[id];
 
-					if(Jisp.vars[id] !== undefined){
+            if(typeof keyword == 'function' && position == 0){
+              var argv = form.slice(1);
 
-						var _var = Jisp.vars[id].value;
-						
-						if(!_var){
-							_var = Jisp.vars[Jisp.vars[id].id].value;
-						}
+              if(!keyword.quote){
+                argv = Jisp(argv, token);
+              }
 
-						if(typeof _var == 'function' && position == 0){
-							form = _var.apply(form, Jisp(form.slice(1)));
-							break;
-						}else{
-							form[position] = Jisp.vars[id].value;
-						}
+              form = keyword.apply(form, argv);
+              break;
+            }else{
+              form[position] = Jisp.names[id].value;
+            }
+          }
 
-					}
-					
-					if(Jisp.names[id] !== undefined){
-						var keyword = Jisp.names[id];
+        }
+      }else{
+        
+        /* Recursive interpretations */
+        if(Array.isArray(token)){          
+          form[position] = Jisp(token);
+        }
+      }	
+    }
+  }
 
-						if(typeof keyword == 'function' && position == 0){
-							var argv = form.slice(1);
-
-							if(!keyword.quote){
-								argv = Jisp(argv, token);
-							}
-
-							form = keyword.apply(form, argv);
-							break;
-							
-						}else{
-							form[position] = Jisp.names[id].value;
-						}
-
-					}
-
-				}
-
-			}else{
-				if(Array.isArray(token)){
-					form[position] = Jisp(token);
-				}
-			}	
-			
-		}
-		
-	}
-
-	return form;
-};
+  return form;
+}
 
 /* Storages */
 Jisp.names = {}; /* Reserved names */
 Jisp.vars = {}; /* User variables */
 
+/* Helping method to create functions with arithy checking and automaticaly quoted */
 Jisp.defun = function(fn, arity, quote){
 	var res = function(){
 		if(arity && arguments.length > arity){
@@ -92,7 +90,11 @@ Jisp.defun = function(fn, arity, quote){
 	return res;
 }
 
-/* DEFINE FUNCTION */
+/*********************************************************/
+/* DEFINITIONS */
+/*********************************************************/
+
+/* Define */
 Jisp.names.def = Jisp.defun(function(name, value){
 	var id = name.id || name;
 	
@@ -121,53 +123,7 @@ Jisp.names.def = Jisp.defun(function(name, value){
 
 }, 2);
 
-Jisp.names.str = function(){
-	return  _.toArray(arguments).map(function(e){
-		return e.toString ? e.toString() : Object.prototype.toString.call(e);
-	}).join("");
-}
-
-Jisp.names.log = function(e){
-	console.log(e);
-}
-
-Jisp.names.join = function(a, c){
-	return a.join(c);
-}
-
-Jisp.names["."] = function(x, y){
-	console.log(x);
-	return x[y.id || y];
-}
-
-Jisp.names.defun = Jisp.defun(function(name, argv, body){
-	var res = [
-		{id: 'def'}, 
-		{id: name.id}, 
-		[ {id:'lambda'} ].concat([argv, body]) ];
-	return Jisp(res);
-}, 3, true);
-
-
-Jisp.names.range = Jisp.defun(function(from, to){
-	if(!to){
-		to = from;
-		from = 0;
-	}
-	
-	var res = [], end = to;
-
-	while(from<=end){
-		res.push(from++);
-	}
-	
-	return res;
-}, 2);
-
-Jisp.names.apply = Jisp.defun(function(fn, arr){
-	return Jisp([fn].concat(arr));
-}, 2, true);
-
+/* Lambda function */
 Jisp.names.lambda = Jisp.defun(function(argv, body){
 	var names = argv.map(function(name){
 		return name.id;
@@ -198,11 +154,19 @@ Jisp.names.lambda = Jisp.defun(function(argv, body){
 			return Jisp(new_body, {id: fname});
 		}
 	};
-	
-	
+		
 	return {id: fname};
 }, 2, true);
 
+Jisp.names.defun = Jisp.defun(function(name, argv, body){
+  var res = [
+    {id: 'def'}, 
+    {id: name.id}, 
+    [ {id:'lambda'} ].concat([argv, body]) ];
+  return Jisp(res);
+}, 3, true);
+
+/* IF/THEN/ELSE */
 Jisp.names['if'] = Jisp.defun(function(cond, then, _else){
 	deb("IF", arguments);
 	if(Jisp(cond)){
@@ -212,10 +176,49 @@ Jisp.names['if'] = Jisp.defun(function(cond, then, _else){
 	}
 },3, true);
 
+
+Jisp.names.range = Jisp.defun(function(from, to){
+  if(!to){
+    to = from;
+    from = 0;
+  }
+  
+  var res = [], end = to;
+
+  while(from<=end){
+    res.push(from++);
+  }
+  
+  return res;
+}, 2);
+
+Jisp.names.apply = Jisp.defun(function(fn, arr){
+  return Jisp([fn].concat(arr));
+}, 2, true);
+
 Jisp.names['quote'] = Jisp.defun(function(a){
 	return a;
 }, null, true);
 
+
+Jisp.names.str = function(){
+  return  _.toArray(arguments).map(function(e){
+    return e.toString ? e.toString() : Object.prototype.toString.call(e);
+  }).join("");
+}
+
+Jisp.names.log = function(e){
+  console.log(e);
+}
+
+Jisp.names.join = function(a, c){
+  return a.join(c);
+}
+
+Jisp.names["."] = function(x, y){
+  console.log(x);
+  return x[y.id || y];
+}
 
 /* Set data type */
 Jisp.names.set = function(){
