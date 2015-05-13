@@ -216,7 +216,6 @@ Jisp.names.join = function(a, c){
 }
 
 Jisp.names["."] = function(x, y){
-  console.log(x);
   return x[y.id || y];
 }
 

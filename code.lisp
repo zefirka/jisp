@@ -6,4 +6,14 @@
 		(nth (- x 1) (cdr coll))
 		(car coll)))
 
-(defun odd?(n) (if (= 0 (% n 2)) nil t ))
+(defun odd?(n) (if (= 0 (mod n 2)) nil t ))
+(defun even?(n)(not odd? n))
+(defun Math-Constants 
+	(hash 
+		:PI 3.1414 
+		:E 2.7192 ))
+
+(def a (set 1 2 3))
+(def b (set 4 5 6))
+(log (apply add (a 7 8 9)))
+(log (apply remove (a 1 2)))
