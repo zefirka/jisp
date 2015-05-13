@@ -17,3 +17,13 @@
 (def b (set 4 5 6))
 (log (apply add (a 7 8 9)))
 (log (apply remove (a 1 2)))
+
+(def factorial (lambda(n)
+	(if (<= n 2) 
+		n 
+		(* n (factorial (- n 1))))))
+
+(defun pow(a b)	
+	(if (= b 0)	1 
+		(if (= a 0) 0
+			(* a (pow a (- b 1))))))
