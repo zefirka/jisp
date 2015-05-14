@@ -1,4 +1,6 @@
 module.exports = {
+	letArityError: "Odd count of arguments of bindings list, expected even",
+	
 	arityError : function(expected, realy){
 		return "Arity error:: exprected: " + expected + " got: " + realy;
 	},

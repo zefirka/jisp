@@ -106,7 +106,7 @@ Jisp.names['defined?'] = function(e){
 /* Define */
 Jisp.names.def = Jisp.defun(function(name, value){
   var id = name.id || name;
-	
+
 	/* Error checking */
 	if(Jisp.names[id]){
 		throw Errors.reservedError(id);
@@ -118,8 +118,6 @@ Jisp.names.def = Jisp.defun(function(name, value){
 		throw Errors.undexpectedIdentificator(name);
 	}
 	
-  //console.log(arguments);
-
 	if(value.id){
     Jisp.vars[name.id] = (value.id ? value.id : value);
 
@@ -134,13 +132,10 @@ Jisp.names.def = Jisp.defun(function(name, value){
 
 }, 2);
 
-/* Lambda function */
+/* Lambda function definitions*/
 Jisp.names.lambda = Jisp.defun(function(argv, body){
-	var names = argv.map(function(name){
-		return name.id;
-	});
-	
-	var fname = "fn_" + (new Date().getTime().toString().slice(-4)) + _.uuid();
+	var names = argv.map(_.prop('id')),	
+	    fname = _.fname();
 	
 	function body_parser(body, args){
 		return body.map(function(token){
@@ -161,47 +156,17 @@ Jisp.names.lambda = Jisp.defun(function(argv, body){
 	Jisp.vars[fname] = {
 		id: fname, 
 		value: function(){
-			var new_body = body_parser(body, arguments)
-			return Jisp(new_body, {id: fname});
+			return Jisp(body_parser(body, arguments), {id: fname});
 		}
 	};
 		
 	return {id: fname};
 }, 2, true);
 
-Jisp.names.defun = Jisp.defun(function(name, argv, body){
-  var res = [
-    {id: 'def'}, 
-    {id: name.id}, 
-    [ {id:'lambda'} ].concat([argv, body])];
-  return Jisp(res);
-}, 3, true);
-
-/* IF/THEN/ELSE */
-Jisp.names['if'] = Jisp.defun(function(cond, then, _else){
-	deb("IF", arguments);
-	if(Jisp(cond)){
-		return Jisp(then)
-	}else{
-		return _else ? Jisp(_else) : null;
-	}
-},3, true);
-
-Jisp.names.apply = Jisp.defun(function(fn, arr){
-  return Jisp([fn].concat(arr));
-}, 2, true);
-
-Jisp.names.quote = Jisp.defun(function(a){
-	return a;
-}, null, true);
-
-Jisp.names.str = function(){
-  return  _.toArray(arguments).map(function(e){
-    return e.toString ? e.toString() : Object.prototype.toString.call(e);
-  }).join("");
-}
-
+/* Let bindings */
 Jisp.names.let = Jisp.defun(function(bindings, body){
+  if(bindings.length%2){ throw Error.letArityError;  }
+  
   function parseBody(token, arr){    
     if(token.id){
       arr.forEach(function(alias){
@@ -209,7 +174,6 @@ Jisp.names.let = Jisp.defun(function(bindings, body){
           token = alias.value;
         }
       });
-
     }
 
     if(Array.isArray(token)){
@@ -219,10 +183,6 @@ Jisp.names.let = Jisp.defun(function(bindings, body){
     }
 
     return token;
-  }
-
-  if(bindings.length%2){
-    throw "Even length of bindings list";
   }
 
   var aliases = []
@@ -239,13 +199,24 @@ Jisp.names.let = Jisp.defun(function(bindings, body){
   }));
 }, 2, true);
 
-Jisp.names.log = function(e){
-  console.log(e);
-}
+/**********************************************************************************/
+/**********************************************************************************/
+/* Constructions */
 
-Jisp.names['throw'] = function(message){
-  throw message;
-}
+/* Conditions */
+Jisp.names['if'] = Jisp.defun(function(c, t, e){
+  return Jisp(c) ? Jisp(t) : (e ? Jisp(e) : null);
+},3, true);
+
+/* Quotation */
+Jisp.names.quote = Jisp.defun(function(a){
+  return a;
+}, null, true);
+
+/* Applying */
+Jisp.names.apply = Jisp.defun(function(fn, arr){
+  return Jisp([fn].concat(arr));
+}, 2, true);
 
 Jisp.names['do'] = function(){
   var argv = _.toArray(arguments), res;
@@ -257,8 +228,28 @@ Jisp.names['do'] = function(){
   }
 }
 
+/* Evaluation */
 Jisp.names['eval'] = function(expression){
   return Jisp(Jisp(expression));
+}
+
+Jisp.names['throw'] = function(message){
+  throw message;
+}
+
+/**********************************************************************************/
+/**********************************************************************************/
+/* MACROSES */
+Jisp.names.defun = Jisp.defun(function(name, argv, body){
+  var res = [
+    {id: 'def'}, 
+    {id: name.id}, 
+    [ {id:'lambda'} ].concat([argv, body])];
+  return Jisp(res);
+}, 3, true);
+
+Jisp.names.log = function(e){
+  console.log(Jisp.jispinize(e));
 }
 
 /********************************************************************/
@@ -307,6 +298,11 @@ Jisp.names.filter = Jisp.defun(function(fn, arr){
   });
 }, 2, true);
 
+Jisp.names.str = function(){
+  return  _.toArray(arguments).map(function(e){
+    return e.toString ? e.toString() : Object.prototype.toString.call(e);
+  }).join("");
+}
 
 /********************************************************************/
 /* SET DATA TYPE */
@@ -381,9 +377,6 @@ Jisp.names['or'] = Jisp.defun(function(a,b){ return a || b;}, 2);
 Jisp.names['not'] = Jisp.defun(function(a){ return !a;}, 1);
 Jisp.names['list?'] = Jisp.defun(function(a){ return Array.isArray(a);}, 1);
 
-/* Debugging logger */
-function deb(){ return Jisp.debug && console.log.apply(console, arguments); }
-
 Jisp.jispinize = function lispinize(js){
   function retoke(j){
     var str = JSON.stringify(j);
@@ -396,8 +389,7 @@ Jisp.jispinize = function lispinize(js){
     }else{
       if(j.id){
         var type;
-
-
+        
         type = typeof (Jisp.names[j.id] || (Jisp.vars[j.id] ? Jisp.vars[j.id].value || Jisp.vars[j.id] : undefined)) || "ID";
         type = type.slice(0,3).toUpperCase();
 
@@ -409,20 +401,22 @@ Jisp.jispinize = function lispinize(js){
         if(typeof j == 'object'){
           return "#HASH: <" + JSON.stringify(j) + ">";
         }else{
-          return j;
+          if(typeof j === "boolean"){
+            if(j){
+              return "#t";
+            }else{
+              return "nil";
+            }
+          }else{
+            return j;
+          }
         }
       }
     }
   }
 
-  var string = "";
   try{
-    if(typeof js == 'object'){
-      string = parseJs(js);
-    }else{
-      string += retoke(js);
-    }
-    return ">" + string;
+    return ">" + parseJs(js);
   }catch(error){
     console.error(error);
   }

@@ -5,7 +5,14 @@ module.exports = {
 			 return i * Math.random() >> 0;
 		}).join(cid || "_");
  	},
-
+ 	prop : function(p){
+ 		return function(o){
+ 			return o[p];
+ 		}
+ 	},
+ 	fname : function(){
+ 		return "fn_" + (new Date().getTime().toString().slice(-3)) + this.uuid()
+ 	},
 	toArray: function (a){ 
 		return Array.prototype.slice.call(a); 
 	},
