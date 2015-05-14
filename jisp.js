@@ -4,8 +4,11 @@ var _       = require("./etc/Utils.js"),
     Hash     = require("./types/Hash.js")
 
 /* Main interpreter function takes array and previous form*/
-var Jisp = function(form, prev){
+var Jisp = function(form, prev, deb){
   /* If called with form */
+  if(deb){
+    console.log(JSON.stringify(form));
+  }
   if(Array.isArray(form)){
 
     for(var position=0, length=form.length; position<length; position++){
@@ -189,7 +192,7 @@ Jisp.names.let = Jisp.defun(function(bindings, body){
   for(var i=0,l=bindings.length;i<l;i+=2){
     aliases.push({
       id: bindings[i].id,
-      value : bindings[i+1]
+      value : Jisp(bindings[i+1])
     });
   }
 
@@ -236,11 +239,8 @@ Jisp.names.cond = Jisp.defun(function(){
   }
 
   if(_default){
-    if(Jisp(_default[0])){
-      return Jisp(_default[1]);
-    }else{
-      return false;
-    }
+    var res = _default[1];
+    return Jisp(res);
   }else{
     return false;
   }
@@ -426,6 +426,10 @@ Jisp.jispinize = function lispinize(js){
     if(Array.isArray(j)){
       return retoke(j.map(parseJs));
     }else{
+      if(typeof j === 'object' && !j){
+        return 'nil';
+      }
+
       if(j.id){
         var type;
         
@@ -532,31 +536,49 @@ Jisp.Eval = function(str){
 	}
 }
 
+function startRepl(){
+  var readline = require('readline'),
+      rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+        terminal: false
+      });
 
-if(process.argv.length > 3){
+  rl.on('line', function(line){
+    console.log(Jisp.jispinize(Jisp.Eval(line)));
+  });
+}
+
+
+if(process.argv.length == 3){
   var filename = process.argv.pop();
   require('fs').readFile(filename, {encoding: 'utf-8'}, function(err, data){
     if(err){
-      throw err;
+      if(filename == "-r"){
+        startRepl();
+      }else{
+        throw err;
+      }
+    }else{
+      Jisp.Eval(data);
     }
-    Jisp.Eval(data);
   })
-}
+}else{
+  if(process.argv.length == 2){
+    startRepl();
+  }else{
+    var filename = process.argv.pop();
+    require('fs').readFile(filename, {encoding: 'utf-8'}, function(err, data){
+      if(err){
+        throw err;
+      }else{
+        Jisp.Eval(data);
+      }
 
-if(process.argv.indexOf("-d")>=0){
-	Jisp.debug = true;
-}
+      if(process.argv.indexOf("-r")>=0){
+        startRepl();
+      }    
+    });
 
-if(process.argv.indexOf("-r")>=0){
-	var readline = require('readline'),
-		rl = readline.createInterface({
-			input: process.stdin,
-			output: process.stdout,
-			terminal: false
-		});
-
-	rl.on('line', function(line){
-		console.log(Jisp.jispinize(Jisp.Eval(line)));
-	});
-
+  }
 }

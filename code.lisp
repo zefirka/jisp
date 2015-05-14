@@ -67,3 +67,25 @@
     (= n 0) 1
     (<= n 2) n
     & (* n (fac (- n 1)))))
+
+;; currying 
+(defun addn(n)
+	(lambda(x)(+ x n)))
+
+(def add-two (addn 2))
+
+(defun is-prime(n)
+	(cond 
+		(<= n 0) (throw "Error: Argument is not natural")
+		(or (= n 1) 
+			(= n 2)) t 		
+		
+		&	(let 
+				( 	divs (range 2 (- n 1)) 
+					testfn (lambda(x) (if (= (mod n x) 0) t nil)) )
+
+				(if (= 0 (length (filter testfn divs))) 
+					t
+					nil))))
+
+(is-prime 10)
