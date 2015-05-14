@@ -4,6 +4,7 @@ Little JavaScript Lisp Interpreter
 ## Run
 Repl:
 ```node jisp.js -r```
+
 File:
 ```node jisp.js file.lisp```
 
