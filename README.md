@@ -1,6 +1,13 @@
 # jisp
 Little JavaScript Lisp Interpreter
 
+## Run
+Repl:
+```node jisp.js -r```
+File:
+```node jisp.js file.lisp```
+
+
 ## Commands
 ###Math and logic
   - `(+ 1 2 3)` - equals to 6 (1 + 2 + 3)
