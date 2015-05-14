@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Jisp by zefirka</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Jisp</h1>
+      <h2 class="project-tagline">JavaScript written lisp interpreter</h2>
+      <a href="https://github.com/zefirka/jisp" class="btn">View on GitHub</a>
+      <a href="https://github.com/zefirka/jisp/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/zefirka/jisp/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="jisp" class="anchor" href="#jisp" aria-hidden="true"><span class="octicon octicon-link"></span></a>jisp</h1>
+
+<p>Little JavaScript Lisp Interpreter</p>
+
+<h2>
+<a id="run" class="anchor" href="#run" aria-hidden="true"><span class="octicon octicon-link"></span></a>Run</h2>
+
+<p>Repl:
+<code>node jisp.js -r</code></p>
+
+<p>File:
+<code>node jisp.js file.lisp</code></p>
+
+<h2>
+<a id="commands" class="anchor" href="#commands" aria-hidden="true"><span class="octicon octicon-link"></span></a>Commands</h2>
+
+<h3>
+<a id="math-and-logic" class="anchor" href="#math-and-logic" aria-hidden="true"><span class="octicon octicon-link"></span></a>Math and logic</h3>
+
+<ul>
+<li>
+<code>(+ 1 2 3)</code> - equals to 6 (1 + 2 + 3)</li>
+<li>
+<code>(- 10 1 1)</code> - equals to 8 (10 - 1 - 1)</li>
+<li>
+<code>(* 1 2 3)</code> - equals to 9 (1 * 2 * 3)</li>
+<li>
+<code>(/ 100 4 5)</code> - equals to 5 (100 / 4 = 25 -&gt; 25 / 5 = 5)</li>
+<li>
+<code>(&gt; 10 11)</code> - false (10 &gt; 11)</li>
+<li>
+<code>(&lt; 10 11)</code> - true (10 &lt; 11)</li>
+<li>
+<code>(or (&gt;= 10 10) (&lt; 3 2))</code> - true (equals to (10 &gt;= 10 || 3 &lt; 2))</li>
+<li>
+<code>(and (&gt;= 10 10) (&lt; 3 2))</code> - false (equals to (10 &gt;= 10 &amp;&amp; 3 &lt; 2))</li>
+<li>
+<code>(not true)</code> - false</li>
+<li>
+<code>(eq? 1 1)</code> - true (strong equality)</li>
+<li>
+<code>(= 1 1)</code> - true (== equality)</li>
+<li>
+<code>(eq? (1 2) (1 2))</code> - true (lists comparsion)</li>
+<li>
+<code>(= (1 2) (1 2))</code> - false (week comparsion don't take lists)</li>
+</ul>
+
+<h3>
+<a id="definitions" class="anchor" href="#definitions" aria-hidden="true"><span class="octicon octicon-link"></span></a>Definitions</h3>
+
+<p><code>(def var 100)</code> - defines global variable <code>var</code> with value <code>100</code></p>
+
+<p><code>(def xv var)</code> - defines global variable <code>xv</code> with value <code>100</code> dereferenced from <code>var</code> variable</p>
+
+<div class="highlight highlight-lisp"><pre>(def result <span class="pl-c">; define global variable with value of sum of local vars</span>
+  (<span class="pl-k">let</span> (x <span class="pl-c1">10</span> y <span class="pl-c1">20</span>) <span class="pl-c">; here x and y are local variables </span>
+    (+ x y))) <span class="pl-c">;final result </span>
+(log result) 
+&gt; <span class="pl-c1">30</span></pre></div>
+
+<h3>
+<a id="functions" class="anchor" href="#functions" aria-hidden="true"><span class="octicon octicon-link"></span></a>Functions</h3>
+
+<p>Definition of anonymous functions:</p>
+
+<div class="highlight highlight-lisp"><pre><span class="pl-c">;define var with name fac which is lambda-function</span>
+(def fac
+  (<span class="pl-c1">lambda</span>(n)
+    (<span class="pl-k">if</span> (&lt;= n <span class="pl-c1">2</span>)
+        <span class="pl-c1">2</span>
+        (* n (fac (- n <span class="pl-c1">1</span>))))))</pre></div>
+
+<p>Or use <code>defun</code> macros:</p>
+
+<div class="highlight highlight-lisp"><pre>(<span class="pl-k">defun</span> <span class="pl-en">inc</span>(x) (+ x <span class="pl-c1">1</span>)) <span class="pl-c">; increment function</span>
+(<span class="pl-k">defun</span> <span class="pl-en">dec</span>(x) (- x <span class="pl-c1">1</span>)) <span class="pl-c">; decrement function</span></pre></div>
+
+<h4>
+<a id="let-bindings" class="anchor" href="#let-bindings" aria-hidden="true"><span class="octicon octicon-link"></span></a>Let-bindings</h4>
+
+<div class="highlight highlight-lisp"><pre>(<span class="pl-k">defun</span> <span class="pl-en">highest-first</span>(x y) 
+  (<span class="pl-k">let</span> (  firsta (<span class="pl-c1">car</span> x)
+          firstb (<span class="pl-c1">car</span> y))
+    (&gt;= firsta firstb) firsta firstb))</pre></div>
+
+<h3>
+<a id="constructions" class="anchor" href="#constructions" aria-hidden="true"><span class="octicon octicon-link"></span></a>Constructions</h3>
+
+<h4>
+<a id="conditions" class="anchor" href="#conditions" aria-hidden="true"><span class="octicon octicon-link"></span></a>Conditions</h4>
+
+<h5>
+<a id="ifthenelse" class="anchor" href="#ifthenelse" aria-hidden="true"><span class="octicon octicon-link"></span></a>If/then/else</h5>
+
+<p><code>(if cond then else)</code> - evaluetes <code>cond</code> and if it's not <code>false</code> (<code>nil</code>) evaluetes <code>then</code> else evaluetes <code>else</code></p>
+
+<div class="highlight highlight-lisp"><pre>(<span class="pl-k">if</span> <span class="pl-c1">t</span> <span class="pl-s"><span class="pl-pds">"</span>Hoooray<span class="pl-pds">"</span></span> <span class="pl-s"><span class="pl-pds">"</span>Never will be logd<span class="pl-pds">"</span></span>)
+&gt;<span class="pl-s"><span class="pl-pds">"</span>Hoooray<span class="pl-pds">"</span></span>
+
+(<span class="pl-k">defun</span> <span class="pl-en">abs</span>(x)
+  (<span class="pl-k">if</span> (&gt;= x <span class="pl-c1">0</span>)    <span class="pl-c">;cond</span>
+      x           <span class="pl-c">;then</span>
+      (* -<span class="pl-c1">1</span> x)))  <span class="pl-c">;else</span>
+
+(abs <span class="pl-c1">10</span>)
+&gt;<span class="pl-c1">10</span>
+(abs -<span class="pl-c1">10</span>)
+&gt;<span class="pl-c1">10</span></pre></div>
+
+<h5>
+<a id="cond" class="anchor" href="#cond" aria-hidden="true"><span class="octicon octicon-link"></span></a>Cond</h5>
+
+<p><code>cond</code> has 2 signatures :</p>
+
+<p><code>(cond test value1 result1 value2 result2 ... &amp; default )</code> and <code>(cond test1 result1 test2 result2 ... &amp; default)</code> </p>
+
+<div class="highlight highlight-lisp"><pre><span class="pl-c">; cond where every condition calculates </span>
+(<span class="pl-k">defun</span> <span class="pl-en">fac</span>(n)
+  (<span class="pl-c1">cond</span> 
+    (&lt; n <span class="pl-c1">0</span>) (throw <span class="pl-s"><span class="pl-pds">"</span>Error: Argument is negative!<span class="pl-pds">"</span></span>)
+    (= n <span class="pl-c1">0</span>) <span class="pl-c1">1</span>
+    (&lt;= n <span class="pl-c1">2</span>) n
+    &amp; (* n (fac (- n <span class="pl-c1">1</span>)))))
+
+(fac -<span class="pl-c1">1</span>)
+Error: Argument is negative!
+
+(fac <span class="pl-c1">0</span>)
+&gt;<span class="pl-c1">1</span>
+
+(fac <span class="pl-c1">2</span>)
+&gt;<span class="pl-c1">2</span>
+
+(fac <span class="pl-c1">4</span>)
+&gt;<span class="pl-c1">24</span></pre></div>
+
+<div class="highlight highlight-lisp"><pre><span class="pl-c">; cond where test calculates once</span>
+(<span class="pl-k">defun</span> <span class="pl-en">test</span>(n)
+  (<span class="pl-c1">cond</span> n
+    <span class="pl-c1">1</span> <span class="pl-s"><span class="pl-pds">"</span>Arg = 1<span class="pl-pds">"</span></span>
+    <span class="pl-c1">2</span> <span class="pl-s"><span class="pl-pds">"</span>Arg = 2<span class="pl-pds">"</span></span>
+    &amp; <span class="pl-s"><span class="pl-pds">"</span>Arg != 1 and 2<span class="pl-pds">"</span></span>))
+
+(test <span class="pl-c1">1</span>)
+&gt;<span class="pl-s"><span class="pl-pds">"</span>Arg = 1<span class="pl-pds">"</span></span>
+
+(test <span class="pl-c1">10</span>)
+&gt;<span class="pl-s"><span class="pl-pds">"</span>Arg != 1 and 2<span class="pl-pds">"</span></span></pre></div>
+
+<h4>
+<a id="form-sequences" class="anchor" href="#form-sequences" aria-hidden="true"><span class="octicon octicon-link"></span></a>Form sequences</h4>
+
+<p><code>(do form1 form2 form3 )</code> - repeatedly evaluetes forms and return value of last form</p>
+
+<div class="highlight highlight-lisp"><pre>(<span class="pl-k">do</span> 
+  (log <span class="pl-s"><span class="pl-pds">"</span>Hey!<span class="pl-pds">"</span></span>)  
+  (log <span class="pl-s"><span class="pl-pds">"</span>You!<span class="pl-pds">"</span></span>)
+  (<span class="pl-k">let</span> (x <span class="pl-c1">10</span> y <span class="pl-c1">20</span>)
+    (+ x y))
+)
+Hey
+You
+&gt;<span class="pl-c1">30</span></pre></div>
+
+<h4>
+<a id="applications" class="anchor" href="#applications" aria-hidden="true"><span class="octicon octicon-link"></span></a>Applications</h4>
+
+<p><code>(apply fn list)</code> - applies given function to the list</p>
+
+<div class="highlight highlight-lisp"><pre>(apply + (<span class="pl-c1">1</span> <span class="pl-c1">2</span> <span class="pl-c1">3</span>))
+&gt;<span class="pl-c1">6</span>
+(apply set (<span class="pl-s"><span class="pl-pds">"</span>alpha<span class="pl-pds">"</span></span> <span class="pl-s"><span class="pl-pds">"</span>betta<span class="pl-pds">"</span></span> <span class="pl-s"><span class="pl-pds">"</span>gamma<span class="pl-pds">"</span></span>))
+&gt;<span class="pl-c1">#SET:</span> &lt;( <span class="pl-s"><span class="pl-pds">"</span>alpha<span class="pl-pds">"</span></span> <span class="pl-s"><span class="pl-pds">"</span>betta<span class="pl-pds">"</span></span> <span class="pl-s"><span class="pl-pds">"</span>gamma<span class="pl-pds">"</span></span> ) &gt;</pre></div>
+
+<h3>
+<a id="data-types" class="anchor" href="#data-types" aria-hidden="true"><span class="octicon octicon-link"></span></a>Data types</h3>
+
+<h4>
+<a id="lists" class="anchor" href="#lists" aria-hidden="true"><span class="octicon octicon-link"></span></a>Lists</h4>
+
+<ul>
+<li>
+<code>(list 1 2 3)</code> - creates list  <code>(1 2 3)</code>
+</li>
+<li>
+<code>(car (1 2 3)</code> - takes head of list <code>1</code>
+</li>
+<li>
+<code>(cdr (1 2 3)</code> - takes rest of list <code>(2 3)</code>
+</li>
+<li>
+<code>(cons 1 (2 3)</code> - concats args to list <code>(1 2 3)</code>
+</li>
+<li>
+<code>(length (1 2 3)</code> - return count of elements of list <code>3</code>
+</li>
+</ul>
+
+<h3>
+<a id="methods" class="anchor" href="#methods" aria-hidden="true"><span class="octicon octicon-link"></span></a>Methods</h3>
+
+<ul>
+<li>
+<code>(map fn list)</code> - applies given function to the each list element return new list</li>
+</ul>
+
+<div class="highlight highlight-lisp"><pre>(<span class="pl-k">defun</span> <span class="pl-en">square</span>(x) (* x x))
+
+(map square (<span class="pl-c1">1</span> <span class="pl-c1">2</span> <span class="pl-c1">3</span> <span class="pl-c1">4</span>))
+&gt;(<span class="pl-c1">1</span> <span class="pl-c1">4</span> <span class="pl-c1">9</span> <span class="pl-c1">16</span>)</pre></div>
+
+<ul>
+<li>
+<code>(filter fn list)</code> - filters list by given function</li>
+</ul>
+
+<div class="highlight highlight-lisp"><pre>(<span class="pl-k">defun</span> <span class="pl-en">odd?</span>(x) (not (<span class="pl-k">eq</span>? <span class="pl-c1">0</span> (mod x <span class="pl-c1">2</span>))))
+
+(filter odd? (<span class="pl-c1">1</span> <span class="pl-c1">2</span> <span class="pl-c1">3</span> <span class="pl-c1">4</span> <span class="pl-c1">5</span> <span class="pl-c1">6</span> <span class="pl-c1">7</span>))
+&gt;(<span class="pl-c1">1</span> <span class="pl-c1">3</span> <span class="pl-c1">5</span> <span class="pl-c1">7</span>)</pre></div>
+
+<ul>
+<li>
+<code>(reduce fn list)</code> - reduce list by given function</li>
+</ul>
+
+<div class="highlight highlight-lisp"><pre>(<span class="pl-k">defun</span> <span class="pl-en">average</span>(count)
+  (<span class="pl-k">let</span> (sum (reduce + (range count))) 
+    (log (str <span class="pl-s"><span class="pl-pds">"</span>count is <span class="pl-pds">"</span></span> count))
+    (/ sum count)))
+
+(average <span class="pl-c1">10</span>)
+&gt;<span class="pl-c1">5.5</span>
+(average <span class="pl-c1">20</span>)
+&gt;<span class="pl-c1">10.5</span></pre></div>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/zefirka/jisp">Jisp</a> is maintained by <a href="https://github.com/zefirka">zefirka</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
+
