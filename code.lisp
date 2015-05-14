@@ -48,3 +48,15 @@
     (do
     	(log (str "count is " count " and sum is " sum))
     	(/ sum count))))
+
+(defun test(c)
+	(cond c
+		1 "Arg = 1"
+		2 "Arg = 2"
+		& "Arg not = 1 or 2"))
+
+(defun testc(c)
+	(cond 
+		(= c 1) "Arg = 1"
+		(= c 2) "Arg = 2"
+		& "Arg not = 1 or 2"))

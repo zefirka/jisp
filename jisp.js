@@ -21,8 +21,7 @@ var Jisp = function(form, prev){
 
           /* Defined variables dereferences */
           if(Jisp.vars[id] !== undefined){
-            var _var = Jisp.vars[id].value;
-            
+            var _var = Jisp.vars[id].value;            
 
             if(!_var){
               var jid = Jisp.vars[id];
@@ -207,6 +206,46 @@ Jisp.names.let = Jisp.defun(function(bindings, body){
 Jisp.names['if'] = Jisp.defun(function(c, t, e){
   return Jisp(c) ? Jisp(t) : (e ? Jisp(e) : null);
 },3, true);
+
+Jisp.names.cond = Jisp.defun(function(){ 
+  var argv = _.toArray(arguments);
+  var _default;
+  var archeck;
+
+  if(argv.length%2){
+    var check = Jisp(argv[0]);
+    argv = argv.slice(1);
+    archeck = true;
+  }
+
+  for(var i=0,l=argv.length;i<l;i+=2){
+
+    if(argv[i].id && argv[i].id == '&'){
+      _default = [argv[i], argv[i+1]];
+    }else{
+      if(archeck){
+        if(_.equals(check, Jisp(argv[i]))){
+          return Jisp(argv[i+1]);
+        }
+      }else{
+        if(Jisp(argv[i])){
+          return Jisp(argv[i+1]);
+        }
+      }
+    }
+  }
+
+  if(_default){
+    if(Jisp(_default[0])){
+      return Jisp(_default[1]);
+    }else{
+      return false;
+    }
+  }else{
+    return false;
+  }
+
+}, null, true);
 
 /* Quotation */
 Jisp.names.quote = Jisp.defun(function(a){
