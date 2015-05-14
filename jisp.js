@@ -105,7 +105,6 @@ Jisp.names['defined?'] = function(e){
 
 /* Define */
 Jisp.names.def = Jisp.defun(function(name, value){
-	console.log(arguments);
   var id = name.id || name;
 	
 	/* Error checking */
@@ -174,7 +173,7 @@ Jisp.names.defun = Jisp.defun(function(name, argv, body){
   var res = [
     {id: 'def'}, 
     {id: name.id}, 
-    [ {id:'lambda'} ].concat([argv, body]) ];
+    [ {id:'lambda'} ].concat([argv, body])];
   return Jisp(res);
 }, 3, true);
 
@@ -188,30 +187,13 @@ Jisp.names['if'] = Jisp.defun(function(cond, then, _else){
 	}
 },3, true);
 
-
-Jisp.names.range = Jisp.defun(function(from, to){
-  if(!to){
-    to = from;
-    from = 0;
-  }
-  
-  var res = [], end = to;
-
-  while(from<=end){
-    res.push(from++);
-  }
-  
-  return res;
-}, 2);
-
 Jisp.names.apply = Jisp.defun(function(fn, arr){
   return Jisp([fn].concat(arr));
 }, 2, true);
 
-Jisp.names['quote'] = Jisp.defun(function(a){
+Jisp.names.quote = Jisp.defun(function(a){
 	return a;
 }, null, true);
-
 
 Jisp.names.str = function(){
   return  _.toArray(arguments).map(function(e){
@@ -265,6 +247,20 @@ Jisp.names['throw'] = function(message){
   throw message;
 }
 
+Jisp.names['do'] = function(){
+  var argv = _.toArray(arguments), res;
+  for(var i = 0, l = argv.length; i<l; i++){
+    res = Jisp(argv[i]);
+    if(i == l-1){
+      return res;
+    }
+  }
+}
+
+Jisp.names['eval'] = function(expression){
+  return Jisp(Jisp(expression));
+}
+
 /********************************************************************/
 /* LIST DATA TYPE */
 /********************************************************************/
@@ -277,6 +273,21 @@ Jisp.names.list = function(){ return _.toArray(arguments); }
 Jisp.names['length'] = function(e){
   return e.length;
 }
+
+Jisp.names.range = Jisp.defun(function(from, to){
+  if(!to){
+    to = from;
+    from = 0;
+  }
+  
+  var res = [], end = to;
+
+  while(from<=end){
+    res.push(from++);
+  }
+  
+  return res;
+}, 2);
 
 Jisp.names.map = Jisp.defun(function(fn, arr){
   return arr.map(function(item){
@@ -373,6 +384,49 @@ Jisp.names['list?'] = Jisp.defun(function(a){ return Array.isArray(a);}, 1);
 /* Debugging logger */
 function deb(){ return Jisp.debug && console.log.apply(console, arguments); }
 
+Jisp.jispinize = function lispinize(js){
+  function retoke(j){
+    var str = JSON.stringify(j);
+    return res = str.replace(/\[/g, '( ').replace(/\]/g, ' )').replace(/,/g, ' ');
+  }
+
+  function parseJs(j){
+    if(Array.isArray(j)){
+      return retoke(j.map(parseJs));
+    }else{
+      if(j.id){
+        var type;
+
+
+        type = typeof (Jisp.names[j.id] || (Jisp.vars[j.id] ? Jisp.vars[j.id].value || Jisp.vars[j.id] : undefined)) || "ID";
+        type = type.slice(0,3).toUpperCase();
+
+        return "#" + type + ": <"  + j.id + ">";
+      }else
+      if(j.items){
+        return "#SET: <" + retoke(j.items) + " >";
+      }else{
+        if(typeof j == 'object'){
+          return "#HASH: <" + JSON.stringify(j) + ">";
+        }else{
+          return j;
+        }
+      }
+    }
+  }
+
+  var string = "";
+  try{
+    if(typeof js == 'object'){
+      string = parseJs(js);
+    }else{
+      string += retoke(js);
+    }
+    return ">" + string;
+  }catch(error){
+    console.error(error);
+  }
+}
 
 /* Tokenizer function */
 function tokenize(expr){	
@@ -389,7 +443,7 @@ function tokenize(expr){
 				.replace(/__NTAB__/g, "\t");
 	}
 
-	var sequences = expr .replace(/\(/g, ' [ ') .replace(/\)/g, ' ] ')
+	var sequences = expr.replace(/\(/g, ' [ ') .replace(/\)/g, ' ] ')
 	.replace(/\;.+(\n|$)/g, '') .replace(/\".*?\"/g, stringSwipeOn)
 	.replace(/\{.*?\}/g, stringSwipeOn);
 
@@ -446,7 +500,7 @@ Jisp.Eval = function(str){
 }
 
 
-if(process.argv.length > 2){
+if(process.argv.length > 3){
   var filename = process.argv.pop();
   require('fs').readFile(filename, {encoding: 'utf-8'}, function(err, data){
     if(err){
@@ -469,7 +523,7 @@ if(process.argv.indexOf("-r")>=0){
 		});
 
 	rl.on('line', function(line){
-		console.log(Jisp.Eval(line));
+		console.log(Jisp.jispinize(Jisp.Eval(line)));
 	});
 
 }

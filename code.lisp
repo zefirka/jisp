@@ -43,5 +43,8 @@
 			fb (if (list? b) (car b) b))
 		(if (>= fa fb) fa fb)))
 
-(defun average(lst)
-	(/ (reduce + lst) (length lst)))
+(defun average(count)
+  (let (sum (reduce + (range count))) 
+    (do
+    	(log (str "count is " count " and sum is " sum))
+    	(/ sum count))))
