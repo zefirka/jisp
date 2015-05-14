@@ -243,3 +243,21 @@ a {
 @media screen and (max-width: 42em) {
   .site-footer {
     font-size: 0.9rem; } }
+
+.main-content textarea{
+  height: 200px;
+}
+
+.main-content textarea,
+.main-content .textarea{
+  width: 100%;
+  border: solid 1px gray;
+  margin-bottom: 20px;
+  font-size: 12px;
+  font-family: "monospace";
+  resize: vertical;
+}
+
+.main-content .textarea{
+  min-height: 60px;
+}
