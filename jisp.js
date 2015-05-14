@@ -417,6 +417,7 @@ Jisp.names['not'] = Jisp.defun(function(a){ return !a;}, 1);
 Jisp.names['list?'] = Jisp.defun(function(a){ return Array.isArray(a);}, 1);
 
 Jisp.jispinize = function lispinize(js){
+  
   function retoke(j){
     var str = JSON.stringify(j);
     return res = str.replace(/\[/g, '( ').replace(/\]/g, ' )').replace(/,/g, ' ');
@@ -436,13 +437,26 @@ Jisp.jispinize = function lispinize(js){
         type = typeof (Jisp.names[j.id] || (Jisp.vars[j.id] ? Jisp.vars[j.id].value || Jisp.vars[j.id] : undefined)) || "ID";
         type = type.slice(0,3).toUpperCase();
 
-        return "#" + type + ": <"  + j.id + ">";
+        if(type == "UND"){
+          return "<" + j.id + ">";
+        }else{
+
+          if(type === "FUN"){
+            for(var alias in Jisp.vars){
+              if(j.id == Jisp.vars[alias]){
+                j.id = alias
+              }
+            }
+          }
+
+          return "#" + type + ": <"  + j.id + ">";  
+        }        
       }else
       if(j.items){
-        return "#SET: <" + retoke(j.items) + " >";
+        return "#SET: < " + parseJs(j.items) + " >";
       }else{
         if(typeof j == 'object'){
-          return "#HASH: <" + JSON.stringify(j) + ">";
+          return "#HASH: < " + JSON.stringify(j) + " >";
         }else{
           if(typeof j === "boolean"){
             if(j){
