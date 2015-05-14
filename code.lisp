@@ -60,3 +60,10 @@
 		(= c 1) "Arg = 1"
 		(= c 2) "Arg = 2"
 		& "Arg not = 1 or 2"))
+
+(defun fac(n)
+  (cond 
+    (< n 0) (throw "Error: Argument is negative!")
+    (= n 0) 1
+    (<= n 2) n
+    & (* n (fac (- n 1)))))

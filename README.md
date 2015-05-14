@@ -57,6 +57,7 @@ Or use `defun` macros:
 ###Constructions
 
 ####Conditions
+#####If/then/else
 `(if cond then else)` - evaluetes `cond` and if it's not `false` (`nil`) evaluetes `then` else evaluetes `else`
 
 ```lisp
@@ -73,6 +74,50 @@ Or use `defun` macros:
 (abs -10)
 >10
 ```
+
+#####Cond
+`cond` has 2 signatures :
+
+`(cond test value1 result1 value2 result2 ... & default )` and `(cond test1 result1 test2 result2 ... & default)` 
+
+```lisp
+; cond where every condition calculates 
+(defun fac(n)
+  (cond 
+    (< n 0) (throw "Error: Argument is negative!")
+    (= n 0) 1
+    (<= n 2) n
+    & (* n (fac (- n 1)))))
+
+(fac -1)
+Error: Argument is negative!
+
+(fac 0)
+>1
+
+(fac 2)
+>2
+
+(fac 4)
+>24
+```
+
+```lisp
+; cond where test calculates once
+(defun test(n)
+  (cond n
+    1 "Arg = 1"
+    2 "Arg = 2"
+    & "Arg != 1 and 2"))
+
+(test 1)
+>"Arg = 1"
+
+(test 10)
+>"Arg != 1 and 2"
+```
+
+
 
 ####Form sequences
 `(do form1 form2 form3 )` - repeatedly evaluetes forms and return value of last form
