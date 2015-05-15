@@ -1,12 +1,16 @@
 # jisp
 Little JavaScript Lisp Interpreter
 
+[Online REPL](https://zefirka.github.io/jisp/repl.html)
+
+
 ## Run
 Repl:
 ```node jisp.js -r```
 
 File:
 ```node jisp.js file.lisp```
+
 
 
 ## Commands
