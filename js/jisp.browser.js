@@ -257,7 +257,7 @@ var Jisp = function(form, prev, deb){
         if(Array.isArray(token)){          
           form[position] = Jisp(token);
         }
-      }	
+      } 
     }
   }
 
@@ -270,20 +270,20 @@ Jisp.vars = {}; /* User variables */
 
 /* Helping method to create functions with arithy checking and automaticaly quoted */
 Jisp.defun = function(fn, arity, quote){
-	var res = function(){
-		if(arity && arguments.length > arity){
-			throw Errors.arityError(arity, arguments.length);
-		}
-		if(fn.length && arguments.length > fn.length){
-			console.warn("Warning! May cause of:" + Errors.arityError(arity, arguments.length))
-		}
-		return fn.apply(Jisp.currentScope, arguments);
-	}
-	if(quote){
-		res.quote = true;
-	}
-	res.arity = arity;
-	return res;
+  var res = function(){
+    if(arity && arguments.length > arity){
+      throw Errors.arityError(arity, arguments.length);
+    }
+    if(fn.length && arguments.length > fn.length){
+      console.warn("Warning! May cause of:" + Errors.arityError(arity, arguments.length))
+    }
+    return fn.apply(Jisp.currentScope, arguments);
+  }
+  if(quote){
+    res.quote = true;
+  }
+  res.arity = arity;
+  return res;
 }
 
 Jisp.names['defined?'] = function(e){
@@ -298,26 +298,26 @@ Jisp.names['defined?'] = function(e){
 Jisp.names.def = Jisp.defun(function(name, value){
   var id = name.id || name;
 
-	/* Error checking */
-	if(Jisp.names[id]){
-		throw Errors.reservedError(id);
-	}else
-	if(/\d+/.test(id)){
-		throw Errors.syntaxErrorNumber(name);
-	}else
-	if(!id.length){
-		throw Errors.undexpectedIdentificator(name);
-	}
-	
-	if(value.id){
+  /* Error checking */
+  if(Jisp.names[id]){
+    throw Errors.reservedError(id);
+  }else
+  if(/\d+/.test(id)){
+    throw Errors.syntaxErrorNumber(name);
+  }else
+  if(!id.length){
+    throw Errors.undexpectedIdentificator(name);
+  }
+  
+  if(value.id){
     Jisp.vars[name.id] = (value.id ? value.id : value);
 
-	}else{
-		Jisp.vars[id] = {
-			id: id,
-			value: value
-		}
-	}
+  }else{
+    Jisp.vars[id] = {
+      id: id,
+      value: value
+    }
+  }
 
   return value;
 
@@ -325,33 +325,33 @@ Jisp.names.def = Jisp.defun(function(name, value){
 
 /* Lambda function definitions*/
 Jisp.names.lambda = Jisp.defun(function(argv, body){
-	var names = argv.map(_.prop('id')),	
-	    fname = _.fname();
-	
-	function body_parser(body, args){
-		return body.map(function(token){
-			if(Array.isArray(token)){
-				return body_parser(token, args);
-			}else
-			if(token.id !== undefined){
-				names.forEach(function(arg_name, arg_position){
-					if(arg_name == token.id){
-						token = args[arg_position];
-					}
-				});				
-			}
-			return token;
-		});
-	}
+  var names = argv.map(_.prop('id')), 
+      fname = _.fname();
+  
+  function body_parser(body, args){
+    return body.map(function(token){
+      if(Array.isArray(token)){
+        return body_parser(token, args);
+      }else
+      if(token.id !== undefined){
+        names.forEach(function(arg_name, arg_position){
+          if(arg_name == token.id){
+            token = args[arg_position];
+          }
+        });       
+      }
+      return token;
+    });
+  }
 
-	Jisp.vars[fname] = {
-		id: fname, 
-		value: function(){
-			return Jisp(body_parser(body, arguments), {id: fname});
-		}
-	};
-		
-	return {id: fname};
+  Jisp.vars[fname] = {
+    id: fname, 
+    value: function(){
+      return Jisp(body_parser(body, arguments), {id: fname});
+    }
+  };
+    
+  return {id: fname};
 }, 2, true);
 
 /* Let bindings */
@@ -477,7 +477,7 @@ Jisp.names.defun = Jisp.defun(function(name, argv, body){
 }, 3, true);
 
 Jisp.names.log = function(e){
-  return e;
+  stdout.put(Jisp.jispinize(e));
 }
 
 /********************************************************************/
@@ -509,19 +509,19 @@ Jisp.names.range = Jisp.defun(function(from, to){
 }, 2);
 
 Jisp.names.map = Jisp.defun(function(fn, arr){
-  return arr.map(function(item){
+  return Jisp(arr).map(function(item){
     return Jisp([fn, item]);
   });
 }, 2, true);
 
 Jisp.names.reduce = Jisp.defun(function(fn, arr){
-  return arr.reduce(function(a, b){
+  return Jisp(arr).reduce(function(a, b){
     return Jisp([fn, a ,b]);
   });
 }, 2, true);
 
 Jisp.names.filter = Jisp.defun(function(fn, arr){
-  return arr.filter(function(item){
+  return Jisp(arr).filter(function(item){
     return Jisp([fn, item]);
   });
 }, 2, true);
@@ -537,7 +537,7 @@ Jisp.names.str = function(){
 /********************************************************************/
 
 Jisp.names.set = function(){
-	return new Set(_.toArray(arguments));
+  return new Set(_.toArray(arguments));
 }
 
 Jisp.names.add = function(){
@@ -558,14 +558,14 @@ Jisp.names.remove = function(){
 }
 
 Jisp.names.union = function(a, b){
-	return (new Set(a.items)).union(b);
+  return (new Set(a.items)).union(b);
 }
 
 /********************************************************************/
 /* HASH DATA TYPE */
 /********************************************************************/
 Jisp.names.hash = function(){
-	return new Hash(_.toArray(arguments)).items;
+  return new Hash(_.toArray(arguments)).items;
 }
 
 Jisp.names.assoc = function(){
@@ -596,17 +596,16 @@ Jisp.names['>'] = Jisp.defun(function(a,b){ return a > b; }, 2);
 Jisp.names['>'] = Jisp.defun(function(a,b){ return a > b; }, 2);
 Jisp.names['>='] = Jisp.defun(function(a,b){return a >= b;}, 2);
 Jisp.names['<='] = Jisp.defun(function(a,b){return a <= b;}, 2);
-Jisp.names['<'] = Jisp.defun(function(a,b){	return a < b; }, 2);
-Jisp.names['='] = Jisp.defun(function(a,b){	return a == b;}, 2);
+Jisp.names['<'] = Jisp.defun(function(a,b){ return a < b; }, 2);
+Jisp.names['='] = Jisp.defun(function(a,b){ return a == b;}, 2);
 Jisp.names['eq?'] = Jisp.defun(function(a,b){return _.equals(a, b);}, 2);
-Jisp.names['mod'] = Jisp.defun(function(a,b){	return a % b; }, 2);
+Jisp.names['mod'] = Jisp.defun(function(a,b){ return a % b; }, 2);
 Jisp.names['and'] = Jisp.defun(function(a,b){return a && b;}, 2);
 Jisp.names['or'] = Jisp.defun(function(a,b){ return a || b;}, 2);
 Jisp.names['not'] = Jisp.defun(function(a){ return !a;}, 1);
 Jisp.names['list?'] = Jisp.defun(function(a){ return Array.isArray(a);}, 1);
 
 Jisp.jispinize = function lispinize(js){
-  
   function retoke(j){
     var str = JSON.stringify(j);
     return res = str.replace(/\[/g, '( ').replace(/\]/g, ' )').replace(/,/g, ' ');
@@ -619,7 +618,11 @@ Jisp.jispinize = function lispinize(js){
       if(typeof j === 'object' && !j){
         return 'nil';
       }
-
+      
+      if(j === undefined){
+        return 'nil';
+      }
+      
       if(j.id){
         var type;
         
@@ -661,91 +664,99 @@ Jisp.jispinize = function lispinize(js){
     }
   }
 
-  try{
-    return ">" + parseJs(js);
-  }catch(error){
-    console.error(error);
-  }
+  return ">" + parseJs(js);
 }
 
 /* Tokenizer function */
-function tokenize(expr){	
-	function stringSwipeOn(string){
-		return string
-			.replace(/ /g, "__PROB__")
-			.replace(/\n/g, "__NLIN__")
-			.replace(/\t/g, "__NTAB__")
-		}
+function tokenize(expr){  
+  function stringSwipeOn(string){
+    return string
+      .replace(/ /g, "__PROB__")
+      .replace(/\n/g, "__NLIN__")
+      .replace(/\t/g, "__NTAB__")
+    }
 
-	function stringSwipeOff(e){
-		return e.replace(/__PROB__/g, " ")
-				.replace(/__NLIN__/g, "\n")
-				.replace(/__NTAB__/g, "\t");
-	}
+  function stringSwipeOff(e){
+    return e.replace(/__PROB__/g, " ")
+        .replace(/__NLIN__/g, "\n")
+        .replace(/__NTAB__/g, "\t");
+  }
 
-	var sequences = expr.replace(/\(/g, ' [ ') .replace(/\)/g, ' ] ')
-	.replace(/\;.+(\n|$)/g, '') .replace(/\".*?\"/g, stringSwipeOn)
-	.replace(/\{.*?\}/g, stringSwipeOn);
+  var sequences = expr.replace(/\(/g, ' [ ') .replace(/\)/g, ' ] ')
+  .replace(/\;.+(\n|$)/g, '') .replace(/\".*?\"/g, stringSwipeOn)
+  .replace(/\{.*?\}/g, stringSwipeOn);
 
-	return sequences.trim().split(/\s+/).map(stringSwipeOff);
+  return sequences.trim().split(/\s+/).map(stringSwipeOff);
 }
 
 /* Return JS structure string */
 function structurize(struct){
-	struct = struct.map(function(token, p){
-		var isId = token != "[" && token != "]" &&  !/\d+/.test(token) && token[0] != '"' && token[token.length-1] != '"' && token !=="t" && token !=="nil";
-		
-		if( isId ){
-			token = "{id: '" + token + "'}"
-		}
-		
-		if(token == "t"){
-			token = "true";
-		}
+  struct = struct.map(function(token, p){
+    var isId = token != "[" && token != "]" &&  !/\d+/.test(token) && token[0] != '"' && token[token.length-1] != '"' && token !=="t" && token !=="nil";
+    
+    if( isId ){
+      token = "{id: '" + token + "'}"
+    }
+    
+    if(token == "t"){
+      token = "true";
+    }
 
-		if(token == "nil"){
-			token = "false";
-		}
-		
-		if(token == "[" || struct[p+1] == "]" || p==(struct.length-1) ){
-			if(token[token.length-1] == '"' && struct[p+1] !== "]"){
-				return token + ","; 
-			}else{
-				return token;
-			}
-		}else{
-			return token + ","
-		}
+    if(token == "nil"){
+      token = "false";
+    }
+    
+    if(token == "[" || struct[p+1] == "]" || p==(struct.length-1) ){
+      if(token[token.length-1] == '"' && struct[p+1] !== "]"){
+        return token + ","; 
+      }else{
+        return token;
+      }
+    }else{
+      return token + ","
+    }
 
 
-	}).join('');
-	
-	return "[" + struct +"]";
+  }).join('');
+  
+  return "[" + struct +"]";
 }
 
 
 
 Jisp.Eval = function(str){
-	var structure = tokenize(str),
-		js = structurize(structure),
-		res;
-	
-	try{
-		res = Jisp(eval(js));
-		return res[res.length-1];
-	}catch(error){
-		console.error(error);
-		return;
-	}
+  var structure = tokenize(str),
+    js = structurize(structure),
+    res;
+  
+  try{
+    res = Jisp(eval(js));
+    return res[res.length-1];
+  }catch(error){
+    stdout.put(error);
+    return;
+  }
 }
 
 
+var stdout;
 
 $(function(){
+  stdout = {
+    obj: $("#to"),
+    put: function(a){
+      var t = $("#to"),
+          res = Jisp.jispinize(Jisp.Eval(a));
+
+      t.html(res.replace("\n", "</br>"));
+    }
+  }
+
+
   $("#eval").click(function(){
     var jisp = $("#from").val();
     if(jisp){
-      $("#to").html( !$("#to").html().length ?  Jisp.jispinize(Jisp.Eval(jisp)) : $("#to").html() + "<br>" + Jisp.jispinize(Jisp.Eval(jisp)));
+      stdout.obj.html( Jisp.jispinize(Jisp.Eval(jisp)).replace(/\</g, "&lt;").replace(/\>/g, "&gt;") + "<br>");
     }
   })
   
