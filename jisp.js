@@ -320,19 +320,19 @@ Jisp.names.range = Jisp.defun(function(from, to){
 }, 2);
 
 Jisp.names.map = Jisp.defun(function(fn, arr){
-  return arr.map(function(item){
+  return Jisp(arr).map(function(item){
     return Jisp([fn, item]);
   });
 }, 2, true);
 
 Jisp.names.reduce = Jisp.defun(function(fn, arr){
-  return arr.reduce(function(a, b){
+  return Jisp(arr).reduce(function(a, b){
     return Jisp([fn, a ,b]);
   });
 }, 2, true);
 
 Jisp.names.filter = Jisp.defun(function(fn, arr){
-  return arr.filter(function(item){
+  return Jisp(arr).filter(function(item){
     return Jisp([fn, item]);
   });
 }, 2, true);
@@ -417,7 +417,6 @@ Jisp.names['not'] = Jisp.defun(function(a){ return !a;}, 1);
 Jisp.names['list?'] = Jisp.defun(function(a){ return Array.isArray(a);}, 1);
 
 Jisp.jispinize = function lispinize(js){
-  
   function retoke(j){
     var str = JSON.stringify(j);
     return res = str.replace(/\[/g, '( ').replace(/\]/g, ' )').replace(/,/g, ' ');
@@ -430,7 +429,11 @@ Jisp.jispinize = function lispinize(js){
       if(typeof j === 'object' && !j){
         return 'nil';
       }
-
+      
+      if(j === undefined){
+        return 'nil';
+      }
+      
       if(j.id){
         var type;
         
@@ -472,11 +475,7 @@ Jisp.jispinize = function lispinize(js){
     }
   }
 
-  try{
-    return ">" + parseJs(js);
-  }catch(error){
-    console.error(error);
-  }
+  return ">" + parseJs(js);
 }
 
 /* Tokenizer function */
@@ -561,6 +560,7 @@ function startRepl(){
   rl.on('line', function(line){
     console.log(Jisp.jispinize(Jisp.Eval(line)));
   });
+
 }
 
 
