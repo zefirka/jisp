@@ -145,12 +145,23 @@ Jisp.names.lambda = Jisp.defun(function(argv, body){
 				return body_parser(token, args);
 			}else
 			if(token.id !== undefined){
-				names.forEach(function(arg_name, arg_position){
-					if(arg_name == token.id){
+        var restp = names.indexOf('&');
+        
+        names.forEach(function(arg_name, arg_position){
+          if(arg_name == token.id && arg_name !== '&'){
 						token = args[arg_position];
 					}
 				});				
+
+        if(token.id == '&' && restp >= 0){
+          if(args.length >= argv.length){
+            token = _.toArray(args).slice(restp, (restp == argv.length-1) ? void 0 : -1);
+          }else{
+            throw "Illegal usage of the & (REST of arguments)";
+          }
+        }
 			}
+
 			return token;
 		});
 	}
@@ -158,7 +169,8 @@ Jisp.names.lambda = Jisp.defun(function(argv, body){
 	Jisp.vars[fname] = {
 		id: fname, 
 		value: function(){
-			return Jisp(body_parser(body, arguments), {id: fname});
+      var parsed_body = body_parser(body, arguments);
+			return Jisp(parsed_body, {id: fname});
 		}
 	};
 		
@@ -192,7 +204,7 @@ Jisp.names.let = Jisp.defun(function(bindings, body){
   for(var i=0,l=bindings.length;i<l;i+=2){
     aliases.push({
       id: bindings[i].id,
-      value : Jisp(bindings[i+1])
+      value : Jisp(parseBody(bindings[i+1], aliases))
     });
   }
 
@@ -275,6 +287,22 @@ Jisp.names['eval'] = function(expression){
 Jisp.names['throw'] = function(message){
   throw message;
 }
+
+Jisp.names['type?'] = Jisp.defun(function(o){
+  var type = typeof o;
+  if(Array.isArray(o)){
+    if(o.type){
+      type = o.type;
+    }else{
+      type = 'list';
+    }
+  }else{
+    if(type == 'object'){
+      type == "hash";
+    }
+  }
+  return type;
+}, 1);
 
 /**********************************************************************************/
 /**********************************************************************************/

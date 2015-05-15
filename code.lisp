@@ -81,10 +81,11 @@
 			(= n 2)) t 		
 		
 		&	(let 
-				( 	divs (range 2 (- n 1)) 
-					testfn (lambda(x) (if (= (mod n x) 0) t nil)) )
+				( 	less (range 2 (- n 1)) 
+					testfn (lambda(x) (if (= (mod n x) 0) t nil)) 
+					divs (filter testfn less) )
 
-				(if (= 0 (length (filter testfn divs))) 
+				(if (= 0 (length divs))
 					t
 					nil))))
 

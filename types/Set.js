@@ -23,6 +23,13 @@ module.exports = (function(){
 		items && items.forEach(function(i){
 			self.items.push(i);
 		});
+
+		Object.defineProperty(this.items, "type", {
+			configurable: false,
+			enumerable : false,
+			value: "set"
+		});
+		return this.items;
 	}
 
 	Set.prototype.add = function(x) {
