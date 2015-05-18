@@ -6,10 +6,10 @@ Little JavaScript Lisp Interpreter
 
 ## Run
 Repl:
-```node jisp.js -r```
+```node repl.js```
 
-File:
-```node jisp.js file.lisp```
+File and repl:
+```node repl.js code.jisp```
 
 
 
