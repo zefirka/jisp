@@ -106,7 +106,7 @@ Jisp.names['defined?'] = Jisp.defun(function(e){
 }, 1, true);
 
 Jisp.names['use'] = function(lib){
-  var filename = lib.id + ".jisp";
+  var filename = lib.id + ".lisp";
 
   require('fs').readFile(filename, {encoding: 'utf-8'}, function(err, data){
     if(err){
@@ -309,16 +309,6 @@ Jisp.names['set!'] = function(x, y){
   Jisp.vars[x.id] = y
 }
 
-Jisp.names['defmacro'] = Jisp.defun(function(name, args, body){
-  var macro = [
-    {id: 'defun'},
-    name,
-    args,
-    [{id: 'quote', }, body]
-  ]
-  Jisp(macro);
-}, 2, true);
-
 Jisp.names['type?'] = Jisp.defun(function(o){
   var type = typeof o;
   if(Array.isArray(o)){
@@ -392,6 +382,12 @@ Jisp.names.range = Jisp.defun(function(from, to){
   
   return res;
 }, 2);
+
+Jisp.names.each = Jisp.defun(function(fn, arr){
+  return Jisp(arr).forEach(function(a, b){
+    Jisp([fn, a ,b]);
+  });
+}, 2, true);
 
 Jisp.names.map = Jisp.defun(function(fn, arr){
   return Jisp(arr).map(function(item){

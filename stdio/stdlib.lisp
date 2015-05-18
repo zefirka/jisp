@@ -44,3 +44,8 @@
 	(let (res (filter fn arr))
 		(eq? (length arr) 
 			(length res))))
+
+;macro of dotimes
+(defun dotimes(times fn)
+	(let (count (range times) f '(fn))
+		(each ~(fn) count)))
