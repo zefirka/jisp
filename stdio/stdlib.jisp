@@ -36,11 +36,11 @@
     	(log (str "count is " count " and sum is " sum))
     	(/ sum count))))
 
-(defun some(fn arr)
+(defun some?(fn arr)
 	(let (res (filter fn arr))
 		(pos? (length res))))
 
-(defun every(fn arr)
+(defun every?(fn arr)
 	(let (res (filter fn arr))
-		(eq (length arr) 
+		(eq? (length arr) 
 			(length res))))

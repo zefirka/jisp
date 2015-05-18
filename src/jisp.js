@@ -5,11 +5,17 @@ var _       = require("./etc/Utils.js"),
     Hash     = require("./types/Hash.js");
 
 /* Main interpreter function takes array and previous form*/
-var Jisp = function(form, prev){
+var Jisp = function(form, prev, prev_position){
+  var asArg = false;
+
   if(Array.isArray(form)){
     for(var position=0, length=form.length; position<length; position++){
       var token = form[position];
-
+      
+      if(prev_position === 0){
+        asArg = true;
+      }
+      
       /* if identificator */
       if(token.id !== undefined){
         var id = token.id;
@@ -28,8 +34,10 @@ var Jisp = function(form, prev){
             }
 
             if(typeof _var == 'function' && position == 0){
-              form = _var.apply(form, Jisp(form.slice(1)));
-              break;
+              if(!asArg){
+                form = _var.apply(form, Jisp(form.slice(1), form, position));
+                break;
+              }
             }else{
               form[position] = Jisp.vars[id].value;
             }
@@ -44,11 +52,12 @@ var Jisp = function(form, prev){
               var argv = form.slice(1);
             
               if(!keyword.quote){
-                argv = Jisp(argv, token);
+                argv = Jisp(argv, token, position);
               }
-            
-              form = keyword.apply(form, argv);
-              break;
+              if(!asArg){
+                form = keyword.apply(form, argv);
+                break;
+              }
             }else
             if(typeof keyword == 'function' && position !== 0){
               form[position] = token;
@@ -540,7 +549,7 @@ Jisp.jispinize = function lispinize(js){
     }
   }
 
-  return ">" + parseJs(js);
+  return parseJs(js);
 }
 
 /* Tokenizer function */
@@ -629,3 +638,8 @@ Jisp.setup = function(options){
 }
 
 module.exports = Jisp; 
+
+// Jisp.Eval("(defun some?(fn arr)(> (length (filter fn arr)) 0 ))\
+// (defun pos(x)(> x 0))\
+// (some? pos (1 2 3 4))");
+
