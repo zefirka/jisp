@@ -283,7 +283,7 @@ Jisp.names.quote = Jisp.defun(function(a){
 
 /* Applying */
 Jisp.names.apply = Jisp.defun(function(fn, arr){
-  return Jisp([fn].concat(arr));
+  return Jisp([fn].concat(Jisp(arr)));
 }, 2, true);
 
 Jisp.names['do'] = function(){
