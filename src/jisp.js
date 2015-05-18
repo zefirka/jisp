@@ -638,8 +638,3 @@ Jisp.setup = function(options){
 }
 
 module.exports = Jisp; 
-
-// Jisp.Eval("(defun some?(fn arr)(> (length (filter fn arr)) 0 ))\
-// (defun pos(x)(> x 0))\
-// (some? pos (1 2 3 4))");
-
