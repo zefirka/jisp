@@ -16,9 +16,9 @@ a {
     text-decoration: underline; }
 
   h1 a {
-  color: inherit;;
+    color: inherit;;
   }
-  h1 a:hover {    text-decoration: underline; }
+  h1 a:hover { text-decoration: none; }
 
 .btn {
   display: inline-block;

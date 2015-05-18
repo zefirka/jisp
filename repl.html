@@ -8,8 +8,13 @@
     <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
     <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/codemirror.css">
+    <link rel="stylesheet" type="text/css" href="stylesheets/zenburn.css">
+    
     <script type="text/javascript" src="js/jquery.min.js"></script>
     <script type="text/javascript" src="js/jisp.browser.js"></script>
+    <script type="text/javascript" src="js/codemirror.js"></script>
+    <script type="text/javascript" src="js/main.js"></script>
   </head>
   <body>
     <section class="page-header">
@@ -21,7 +26,11 @@
 
     <section class="main-content">
       <h3>JISP code</h3>
-      <textarea id="from"></textarea>
+      <textarea id="from">
+(def greet "Hello")
+(log (str greet " world!"))
+"Try it!"
+      </textarea>
       <a href="javascript: void 0;" class="" id="eval">Eval</a>
       <h3>Result code</h3>
       <div class="textarea" id="to"></div>
