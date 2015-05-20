@@ -130,7 +130,7 @@ Jisp.names.def = Jisp.defun(function(name, value){
 	if(Jisp.names[id]){
 		throw Errors.reservedError(id);
 	}else
-	if(/\d+/.test(id)){
+	if(/\d+/.test(id[0])){
 		throw Errors.syntaxErrorNumber(name);
 	}else
 	if(!id.length){
@@ -580,7 +580,7 @@ function tokenize(expr){
 /* Return JS structure string */
 function structurize(struct){
 	struct = struct.map(function(token, p){
-		var isId = token != "[" && token != "]" &&  !/\d+/.test(token) && token[0] != '"' && token[token.length-1] != '"' && token !=="t" && token !=="nil";
+		var isId = token != "[" && token != "]" &&  !/^\d+$/.test(token) && token[0] != '"' && token[token.length-1] != '"' && token !=="t" && token !=="nil";
 		
 		if( isId ){
 			token = "{id: '" + token + "'}"

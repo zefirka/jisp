@@ -50,3 +50,5 @@
 					nil))))
 
 (is-prime 10)
+
+(def start (coor 0 0))

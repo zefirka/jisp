@@ -49,3 +49,17 @@
 (defun dotimes(times fn)
 	(let (count (range times) f '(fn))
 		(each ~(fn) count)))
+
+(def Vector2D (hash 
+	:new (lambda(x y) (hash :x x :y y))
+
+	:sum (lambda(a b)
+			(let ( 	nx (+ (get a :x) (get b :x))
+			  		ny (+ (get a :y) (get b :y)))
+			(hash :x nx :y ny)))))
+
+(def Matrix (hash 
+	:matrix  (lambda(m n)
+	 			(let (rng (lambda(i)(range (- n 1))))
+	   				(map rng (range (- m 1)))))
+	:nth (lambda(mt row col) (nth (+ row 1) (nth (+ col 1) mt)))))
